@@ -4,3 +4,6 @@ Large scale distributed application with Deployment on Google Cloud platform. Co
 YouTube : https://www.youtube.com/playlist?list=PLda_UWe5ls_la6qHYM1f3j86XrEwRvAMn
 https://www.besidescollege.org/spring-boot-mongodb-atlas-docker-k8s-gcp-delpoyment/
 
+## IMPORTANT
+Don't forget to add the pod IPs in the Mongo Atlas Cloud whitelist: check [this post](https://stackoverflow.com/questions/60290041/unable-to-connect-to-mongodb-atlas-from-gke-pod) out
+
