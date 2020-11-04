@@ -1,41 +1,36 @@
 package org.besidescollege.accountservice.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.besidescollege.accountservice.repository.AccountRepository;
+import org.besidescollege.domain.account.Account;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import org.besidescollege.accountservice.repository.AccountRepository;
-import org.besidescollege.domain.account.Account;
-
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class AccountController {
 
-  @Autowired
-  AccountRepository accountRepository;
+  private final AccountRepository accountRepository;
+
+  @GetMapping("/hello")
+  public ResponseEntity<String> hello() {
+    return ResponseEntity.ok().body("Hello. Service up and running!!!");
+  }
 
   @GetMapping("/accounts")
   public ResponseEntity<List<Account>> getAllAccounts(@RequestParam(required = false) String name) {
     try {
-      List<Account> accounts = new ArrayList<Account>();
+      List<Account> accounts = new ArrayList<>();
 
       if (name == null)
-        accountRepository.findAll().forEach(accounts::add);
+        accounts.addAll(accountRepository.findAll());
 
       if (accounts.isEmpty()) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -51,19 +46,19 @@ public class AccountController {
   public ResponseEntity<Account> getAccountById(@PathVariable("id") String id) {
     Optional<Account> accountData = accountRepository.findById(id);
 
-    if (accountData.isPresent()) {
-      return new ResponseEntity<>(accountData.get(), HttpStatus.OK);
-    } else {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+    return accountData.map(account -> new ResponseEntity<>(account, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
   @PostMapping("/accounts")
   public ResponseEntity<Account> createAccount(@RequestBody Account account) {
     try {
-      Account _account = accountRepository
-          .save(new Account(account.getName(), account.getAddress(), account.getPhone(), account.getPhoneAlternate()));
-      return new ResponseEntity<>(_account, HttpStatus.CREATED);
+      Account accountSaved = accountRepository.insert(
+              Account.builder()
+                      .name(account.getName())
+                      .address(account.getAddress())
+                      .phone(account.getPhone())
+                      .phoneAlternate(account.getPhoneAlternate()).build());
+      return new ResponseEntity<>(accountSaved, HttpStatus.CREATED);
     } catch (Exception e) {
       return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -74,12 +69,11 @@ public class AccountController {
     Optional<Account> accountData = accountRepository.findById(id);
 
     if (accountData.isPresent()) {
-      Account _account = accountData.get();
-      _account.setName(account.getName());
-      _account.setAddress(account.getAddress());
-      _account.setPhone(account.getPhone());
-      _account.setPhoneAlternate(account.getPhoneAlternate());
-      return new ResponseEntity<>(accountRepository.save(_account), HttpStatus.OK);
+      return new ResponseEntity<>(accountRepository.save(Account.builder()
+              .name(account.getName())
+              .address(account.getAddress())
+              .phone(account.getPhone())
+              .phoneAlternate(account.getPhoneAlternate()).build()), HttpStatus.OK);
     } else {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
