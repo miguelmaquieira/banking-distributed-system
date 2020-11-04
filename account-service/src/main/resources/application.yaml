@@ -1,4 +1,4 @@
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://test:fAlip0t8s@cluster0.ag5sn.mongodb.net/baking-system?retryWrites=true&w=majority
+      uri: mongodb+srv://test:<password>@cluster0.ag5sn.mongodb.net/baking-system?retryWrites=true&w=majority
